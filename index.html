@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Self — УЗД захворювань артерій нижніх кінцівок</title>
+<meta name="description" content="Онлайн-семінар «УЗД захворювань артерій нижніх кінцівок» 3–4 вересня: практичний розбір алгоритмів дуплексного сканування, 7 балів БПР, запис на 30 днів.">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Self — УЗД захворювань артерій нижніх кінцівок">
+<meta property="og:description" content="Онлайн-семінар 3–4 вересня: практичний розбір алгоритмів дуплексного сканування, 7 балів БПР, запис на 30 днів.">
+<!-- TODO: замінити на фінальний URL сторінки -->
+<meta property="og:url" content="https://self.example.com/">
+<!-- TODO: додати зображення 1200×630px для прев'ю в соцмережах і замінити цей URL -->
+<meta property="og:image" content="https://self.example.com/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Фавікони згенеровано (монограма "S" + жовта крапка, у стилі логотипу Self.) -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- GA4: вставити тег тут -->
+<!-- Meta Pixel: вставити тег тут -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -95,10 +115,11 @@
   .btn-block{width:100%;}
 
   /* ===== HEADER ===== */
-  header{position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  header{position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.94); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line); border-radius:0 0 clamp(20px,3vw,40px) clamp(20px,3vw,40px);}
   header::after{
-    content:""; position:absolute; left:0; right:0; top:100%; height:24px;
-    background:linear-gradient(180deg, rgba(18,23,43,0.06), transparent);
+    content:""; position:absolute; inset:0;
+    border-radius:inherit;
+    box-shadow:0 16px 24px -18px rgba(18,23,43,0.22);
     opacity:0; transition:opacity var(--dur) var(--ease); pointer-events:none;
   }
   header.scrolled::after{opacity:1;}
@@ -183,6 +204,7 @@
 
   /* ===== HERO ===== */
   .hero{position:relative;}
+  .hero .card-face{padding:44px 0;}
   .hero-video{
     position:absolute; inset:0; z-index:0;
     width:100%; height:100%; object-fit:cover; object-position:center;
@@ -206,7 +228,8 @@
 
   .hero-visual{position:relative;}
   .hero-photo{
-    aspect-ratio:4/5;
+    aspect-ratio:4/4.4;
+    max-height:min(58vh,620px);
     border-radius:32px;
     position:relative;
     box-shadow:var(--shadow);
@@ -235,7 +258,7 @@
     padding:22px 26px; display:flex; gap:28px;
     z-index:2;
   }
-  @media(max-width:520px){.float-card{position:static; margin-top:20px; box-shadow:var(--shadow-sm); flex-wrap:wrap; gap:20px;}}
+  @media(max-width:899px){.float-card{position:static; margin-top:20px; box-shadow:var(--shadow-sm); flex-wrap:wrap; gap:20px;}}
   .float-stat .fs-num{font-family:'Sora',sans-serif; font-size:24px; font-weight:800; color:var(--ink);}
   .float-stat .fs-label{font-size:12px; color:var(--muted); font-weight:600; margin-top:2px;}
 
@@ -245,25 +268,87 @@
   .section-head p{color:var(--muted); font-size:16px; margin-top:14px;}
   .section-head.center{margin-left:auto; margin-right:auto; text-align:center;}
 
-  /* ===== CARD STACK (each section IS a card — its rounded top edge
-     rises into view and covers whatever was pinned before it) ===== */
+  /* ===== CARD STACK ===== */
+  /* The sticky slot is identical and uniform for every section — this is
+     the one thing that has to be 100% reliable, so it never varies. The
+     "peek behind the next card" effect lives entirely on .card-face, a
+     purely visual inner layer offset by margin-top. Since the sticky
+     math never changes, no section can ever misbehave relative to the
+     others (which is what kept happening when each section had its own
+     sticky offset — the last ones ran out of room and glitched). */
   .card-section{
-    position:sticky; top:0;
-    min-height:100vh; min-height:100dvh;
+    --peek:0px;
+    position:sticky; top:calc(84px + var(--peek));
+    height:calc(100vh - 84px); height:calc(100dvh - 84px);
     width:100%;
-    display:flex; align-items:center;
     overflow:hidden;
   }
-  .card-section > .wrap{width:100%;}
-  section.card-section{
+  .card-face{
+    position:relative;
+    width:100%; height:100%;
+    display:flex; align-items:flex-start; align-items:safe center;
+    overflow:hidden;
+  }
+  .card-face > .wrap{
+    width:100%;
+    max-height:100%;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    scrollbar-width:none;
+  }
+  .card-face > .wrap::-webkit-scrollbar{display:none; width:0; height:0;}
+  /* hero's real content always fits — the only "overflow" was the
+     absolutely-positioned float-card's decorative bleed being counted
+     as scrollable area even though nothing is actually clipped. */
+  #hero .card-face > .wrap{overflow-y:visible;}
+  /* Below ~900px the "pinned card" effect fights touch scrolling too
+     unreliably across mobile browsers — content taller than one screen
+     could never be fully read. Fall back to a plain, always-reliable
+     stacked layout: sections keep their card look (bg/radius/shadow)
+     but scroll normally, no sticky pinning, no nested scroll container. */
+  @media(max-width:899px){
+    .card-section{
+      position:relative; top:auto;
+      height:auto; min-height:0;
+      margin-bottom:20px;
+    }
+    .card-face{
+      margin-top:0; height:auto;
+      display:block;
+      overflow:hidden;
+    }
+    .card-face > .wrap{
+      max-height:none;
+      overflow-y:visible;
+      -webkit-overflow-scrolling:auto;
+      overscroll-behavior:auto;
+    }
+  }
+  section .card-face{
     background:var(--canvas);
-    border-radius:clamp(20px,3vw,40px) clamp(20px,3vw,40px) 0 0;
+    border-radius:clamp(20px,3vw,40px);
     border:1px solid rgba(18,23,43,0.09);
-    border-bottom:none;
-    box-shadow:0 -18px 40px -28px rgba(18,23,43,0.28);
     padding:70px 0;
   }
-  @media(max-width:640px){section.card-section{padding:44px 0;}}
+  @media(max-width:640px){section .card-face{padding:44px 0;}}
+  /* cards no longer fully cover one another with the parallax peek —
+     a card's bottom edge can now show past the next one, so every
+     corner needs to read as rounded, not just the top. */
+  @media(max-width:899px){
+    section .card-face{
+      border-radius:clamp(20px,5vw,32px);
+      border:1.5px solid rgba(18,23,43,0.14);
+      box-shadow:var(--shadow);
+    }
+  }
+  footer .card-face{
+    background:var(--ink); color:#fff;
+    padding:72px 0 32px;
+    border-radius:clamp(20px,3vw,40px) clamp(20px,3vw,40px) 0 0;
+    border:1px solid rgba(255,255,255,0.08);
+    border-bottom:none;
+  }
 
   /* content card that hugs each section's content against the shared canvas */
   .section-card{
@@ -455,8 +540,15 @@
   .testi-dot.active::after{opacity:1; transform:translate(-50%,-50%) scaleX(1);}
 
   /* ===== FOOTER ===== */
-  footer{background:var(--ink); color:#fff; padding:72px 0 32px; border-radius:40px 40px 0 0; border:1px solid rgba(255,255,255,0.08); border-bottom:none; box-shadow:0 -18px 40px -28px rgba(18,23,43,0.28);}
-  @media(max-width:640px){footer{padding:48px 0 28px;}}
+  footer{color:#fff;}
+  .footer-frame{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:28px;
+    padding:40px 44px;
+  }
+  @media(max-width:640px){.footer-frame{padding:28px 24px; border-radius:22px;}}
+  @media(max-width:640px){footer .card-face{padding:48px 0 28px;}}
   .footer-top{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; padding-bottom:48px; border-bottom:1px solid rgba(255,255,255,0.12);}
   @media(max-width:700px){.footer-top{grid-template-columns:1fr; gap:32px;}}
   .footer-logo{font-family:'Sora',sans-serif; font-size:26px; font-weight:800; margin-bottom:16px;}
@@ -583,7 +675,8 @@
 
 <main>
   <!-- HERO -->
-  <section id="hero" class="hero card-section" style="z-index:1;">
+  <section id="hero" class="hero card-section" style="z-index:1; --peek:0px;">
+    <div class="card-face">
     <video class="hero-video" autoplay muted loop playsinline preload="auto">
       <source src="https://res.cloudinary.com/iamdkwtu/video/upload/v1786877631/Translucent_glass_waves_transfor__202608151335.mp4" type="video/mp4">
     </video>
@@ -601,9 +694,9 @@
 
       <div class="hero-visual">
         <div class="hero-photo">
-          <img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=1000&auto=format&fit=crop&q=80" alt="Лектор семінару — лікар ультразвукової діагностики" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=1000&auto=format&fit=crop&q=80" alt="Лектор семінару — лікар ультразвукової діагностики" width="1000" height="1250" fetchpriority="high">
           <div class="hero-photo-inner glass-dark">
-            <div class="hero-photo-avatar"><img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=100&auto=format&fit=crop&q=80" alt="" loading="lazy"></div>
+            <div class="hero-photo-avatar"><img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=100&auto=format&fit=crop&q=80" alt="" width="100" height="100" loading="lazy"></div>
             <div>
               <div class="hero-photo-label">Лектор семінару</div>
               <div class="hero-photo-name">Олена Ковальчук</div>
@@ -626,10 +719,12 @@
         </div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- ABOUT -->
-  <section id="about" class="section-reveal card-section" style="z-index:2;">
+  <section id="about" class="section-reveal card-section" style="z-index:2; --peek:16px;">
+    <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
         <div class="eyebrow"><span class="dot"></span>Про семінар</div>
@@ -641,7 +736,7 @@
             <p>Дуплексне сканування артерій нижніх кінцівок — один з найчастіше призначуваних видів УЗД-обстежень і водночас один з найскладніших для точної інтерпретації.</p>
             <p>Семінар побудовано навколо реальних клінічних кейсів: за два дні ви пройдете шлях від базової техніки сканування до розбору межових випадків із щоденної практики.</p>
             <div class="about-photo">
-              <img src="https://images.unsplash.com/photo-1691933880096-4046bc9e2fa0?w=900&auto=format&fit=crop&q=80" alt="Проведення ультразвукового дослідження" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1691933880096-4046bc9e2fa0?w=900&auto=format&fit=crop&q=80" alt="Проведення ультразвукового дослідження" width="900" height="619" loading="lazy">
             </div>
           </div>
           <div class="program-grid reveal-stagger reveal">
@@ -653,10 +748,12 @@
         </div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- LECTURER -->
-  <section id="lecturer" class="section-reveal card-section" style="z-index:3;">
+  <section id="lecturer" class="section-reveal card-section" style="z-index:3; --peek:32px;">
+    <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
         <div class="eyebrow"><span class="dot"></span>Лектор</div>
@@ -665,21 +762,24 @@
       <div class="section-card">
       <div class="lecturer-grid reveal">
         <div class="lect-photo">
-          <img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=800&auto=format&fit=crop&q=80&crop=faces" alt="Олена Ковальчук, лектор семінару" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=800&auto=format&fit=crop&q=80&crop=faces" alt="Олена Ковальчук, лектор семінару" width="800" height="1067" loading="lazy">
         </div>
         <div class="lect-bio">
           <div class="role-pill">Кандидат медичних наук · Лікар УЗД</div>
           <h3>Олена Ковальчук</h3>
           <p>Понад 12 років практики в ультразвуковій діагностиці судин, зокрема артерій та вен нижніх кінцівок. Викладає на профільних курсах для лікарів УЗД, регулярно проводить майстер-класи з розбором складних клінічних випадків із власної практики.</p>
+          <!-- TODO: замінити href="#" на реальне посилання (профіль лектора / сторінка з детальнішим CV) -->
           <a href="#" class="btn btn-outline" style="padding:12px 22px; font-size:14px;">Профіль лектора ↗</a>
         </div>
       </div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- INCLUDED -->
-  <section id="included" class="section-reveal card-section" style="z-index:4;">
+  <section id="included" class="section-reveal card-section" style="z-index:4; --peek:48px;">
+    <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
         <div class="eyebrow"><span class="dot"></span>Умови</div>
@@ -750,11 +850,13 @@
         </div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- TESTIMONIALS -->
   <!-- TODO: демо-контент, замінити на реальні відгуки перед публікацією -->
-  <section class="section-reveal card-section" style="z-index:5;">
+  <section class="section-reveal card-section" style="z-index:5; --peek:64px;">
+    <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
         <div class="eyebrow"><span class="dot"></span>Відгуки</div>
@@ -774,7 +876,7 @@
               <div class="testi-card">
                 <div class="testi-stars">★★★★★</div>
                 <p class="testi-text">"Подобається, що розбирають реальні кейси, а не тільки теорію. Лектор відповідав на запитання навіть після завершення."</p>
-                <div class="testi-person"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?w=100&auto=format&fit=crop&q=80" alt="" loading="lazy"></div><div><div class="testi-name">Олег К.</div><div class="testi-role">Судинний хірург · Львів</div></div></div>
+                <div class="testi-person"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?w=100&auto=format&fit=crop&q=80" alt="" width="100" height="100" loading="lazy"></div><div><div class="testi-name">Олег К.</div><div class="testi-role">Судинний хірург · Львів</div></div></div>
               </div>
             </div>
             <div class="testi-slide">
@@ -795,7 +897,7 @@
               <div class="testi-card">
                 <div class="testi-stars">★★★★★</div>
                 <p class="testi-text">"Реєстрація і оплата зайняли п'ять хвилин, посилання на Zoom прийшло вчасно. Організаційно все чітко."</p>
-                <div class="testi-person"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1758691463582-11aea602cd4a?w=100&auto=format&fit=crop&q=80" alt="" loading="lazy"></div><div><div class="testi-name">Дмитро Т.</div><div class="testi-role">Кардіолог · Дніпро</div></div></div>
+                <div class="testi-person"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1758691463582-11aea602cd4a?w=100&auto=format&fit=crop&q=80" alt="" width="100" height="100" loading="lazy"></div><div><div class="testi-name">Дмитро Т.</div><div class="testi-role">Кардіолог · Дніпро</div></div></div>
               </div>
             </div>
             <div class="testi-slide">
@@ -818,10 +920,12 @@
         </div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- PRICE -->
-  <section id="price" class="section-reveal card-section" style="z-index:6;">
+  <section id="price" class="section-reveal card-section" style="z-index:6; --peek:80px;">
+    <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
         <div class="eyebrow"><span class="dot"></span>Ціна</div>
@@ -855,22 +959,26 @@
           <h3>Форма реєстрації</h3>
           <p class="fp-sub">Заповніть дані — після цього ви перейдете на сторінку оплати.</p>
 
+          <!-- TODO: без action форма нікуди не відправляється. Підключи реальний
+               ендпоінт/платіжний провайдер і додай повідомлення про підтвердження
+               після відправки (напр. блок "Дякуємо, дані отримано" або редірект). -->
+          <form id="registrationForm" action="#" method="post">
           <div class="field">
-            <label>ПІБ</label>
-            <input type="text" placeholder="Прізвище, ім'я, по батькові">
+            <label for="fullNameInput">ПІБ</label>
+            <input type="text" id="fullNameInput" name="fullName" placeholder="Прізвище, ім'я, по батькові" required>
           </div>
           <div class="field">
-            <label>Email</label>
-            <input type="email" placeholder="name@example.com">
+            <label for="emailInput">Email</label>
+            <input type="email" id="emailInput" name="email" placeholder="name@example.com" required>
           </div>
           <div class="field">
-            <label>Телефон</label>
-            <input type="tel" placeholder="+380 XX XXX XX XX">
+            <label for="phoneInput">Телефон</label>
+            <input type="tel" id="phoneInput" name="phone" placeholder="+380 XX XXX XX XX" required>
           </div>
           <div class="field">
-            <label>Спеціальність</label>
-            <select id="specialtySelect">
-              <option>Оберіть спеціальність</option>
+            <label for="specialtySelect">Спеціальність</label>
+            <select id="specialtySelect" name="specialty" required>
+              <option value="">Оберіть спеціальність</option>
               <option>Ультразвукова діагностика</option>
               <option>Кардіологія</option>
               <option>Судинна хірургія</option>
@@ -880,18 +988,23 @@
           <div class="field field-collapsible" id="otherSpecialtyField">
             <div class="field-collapsible-inner">
               <label for="otherSpecialtyInput">Вкажіть спеціальність</label>
-              <input type="text" id="otherSpecialtyInput" placeholder="Ваша спеціальність">
+              <input type="text" id="otherSpecialtyInput" name="otherSpecialty" placeholder="Ваша спеціальність">
             </div>
           </div>
-          <button type="button" class="btn btn-primary btn-block">Оплатити участь</button>
+          <button type="submit" class="btn btn-primary btn-block">Оплатити участь</button>
+          </form>
+          <p id="registrationConfirm" role="status" style="display:none; margin-top:16px; font-size:14px; color:rgba(255,255,255,0.85);">Дякуємо! Дані отримано — TODO: замінити на реальний редірект на сторінку оплати.</p>
         </div>
       </div>
+    </div>
     </div>
   </section>
 </main>
 
-<footer id="contacts" class="section-reveal card-section" style="z-index:7;">
+<footer id="contacts" class="section-reveal card-section" style="z-index:7; --peek:96px;">
+  <div class="card-face">
   <div class="wrap">
+    <div class="footer-frame">
     <div class="footer-top">
       <div>
         <div class="footer-logo">Self<span class="dot">.</span></div>
@@ -905,12 +1018,14 @@
       </div>
       <div class="footer-col">
         <h5>Соцмережі</h5>
-        <a href="https://www.facebook.com/self.your.medical.education" target="_blank" rel="noopener">Facebook ↗</a>
+        <a href="https://www.facebook.com/self.your.medical.education" target="_blank" rel="noopener noreferrer">Facebook ↗</a>
       </div>
     </div>
     <div class="footer-bottom">
       <p>© 2026 Self · Освітня платформа</p>
     </div>
+    </div>
+  </div>
   </div>
 </footer>
 
@@ -979,6 +1094,17 @@
     heroVideo.removeAttribute('autoplay');
   }
 
+  // Форма реєстрації — тимчасовий обробник (TODO: замінити на реальну
+  // відправку даних/редірект на оплату, коли буде підключено бекенд).
+  var registrationForm = document.getElementById('registrationForm');
+  var registrationConfirm = document.getElementById('registrationConfirm');
+  if (registrationForm) {
+    registrationForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      if (registrationConfirm) registrationConfirm.style.display = 'block';
+    });
+  }
+
   // "Інша" спеціальність — розкриває поле для ручного вводу
   var specialtySelect = document.getElementById('specialtySelect');
   var otherSpecialtyField = document.getElementById('otherSpecialtyField');
@@ -1026,6 +1152,7 @@
   window.addEventListener('resize', function(){
     if (window.innerWidth >= 900) closeMobileMenu();
   });
+
 
   // Header shadow on scroll
   var header = document.querySelector('header');
