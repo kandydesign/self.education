@@ -29,6 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    --header-h:calc(84px + env(safe-area-inset-top, 0px));
     --bg:#FFFFFF;
     --bg-soft:#F4F6FB;
     --canvas:#EEF1F8;
@@ -52,7 +53,7 @@
     --dur-slow:.8s;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
+  html{scroll-behavior:smooth; scroll-padding-top:var(--header-h);}
   body{
     background:var(--stage);
     color:var(--ink);
@@ -115,7 +116,8 @@
   .btn-block{width:100%;}
 
   /* ===== HEADER ===== */
-  header{position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.94); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line); border-radius:0 0 clamp(20px,3vw,40px) clamp(20px,3vw,40px);}
+  header{position:fixed; top:0; left:0; right:0; z-index:50; padding-top:env(safe-area-inset-top, 0px); background:rgba(255,255,255,0.94); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line); border-radius:0 0 clamp(20px,3vw,40px) clamp(20px,3vw,40px);}
+  main{padding-top:var(--header-h);}
   header::after{
     content:""; position:absolute; inset:0;
     border-radius:inherit;
@@ -278,8 +280,8 @@
      sticky offset — the last ones ran out of room and glitched). */
   .card-section{
     --peek:0px;
-    position:sticky; top:calc(84px + var(--peek));
-    height:calc(100vh - 84px); height:calc(100dvh - 84px);
+    position:sticky; top:calc(var(--header-h) + var(--peek));
+    height:calc(100vh - var(--header-h)); height:calc(100dvh - var(--header-h));
     width:100%;
     overflow:hidden;
   }
@@ -311,8 +313,8 @@
     .card-section{
       position:relative; top:auto;
       height:auto; min-height:0;
-      margin-bottom:20px;
     }
+    section.card-section{margin-bottom:20px;}
     .card-face{
       margin-top:0; height:auto;
       display:block;
