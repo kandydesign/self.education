@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Self — УЗД захворювань артерій нижніх кінцівок</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFFFFF;
+    --bg-soft:#F4F6FB;
+    --canvas:#EEF1F8;
+    --stage:#E1E5F0;
+    --ink:#12172B;
+    --muted:#68708A;
+    --blue:#2F55E8;
+    --blue-dark:#1E3AAE;
+    --blue-tint:#EAEFFE;
+    --yellow:#FFC845;
+    --yellow-dark:#8A6408;
+    --yellow-tint:#FFF6E0;
+    --line:#E7E9F2;
+    --card-radius:24px;
+    --shadow:0 20px 50px -20px rgba(18,23,43,0.18), 0 6px 14px -8px rgba(47,85,232,0.12);
+    --shadow-sm:0 10px 24px -14px rgba(18,23,43,0.16), 0 3px 8px -4px rgba(47,85,232,0.10);
+    --ease:cubic-bezier(.16,1,.3,1);
+    --ease-spring:cubic-bezier(.34,1.4,.64,1);
+    --dur-fast:.28s;
+    --dur:.5s;
+    --dur-slow:.8s;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--stage);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+  }
+  body::after{
+    content:"";
+    position:fixed; inset:0; z-index:9999; pointer-events:none;
+    opacity:0.035; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  img{max-width:100%; display:block;}
+  a{color:inherit; text-decoration:none;}
+  ul{list-style:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+  @media(max-width:480px){.wrap{padding:0 20px;}}
+  h1,h2,h3,h4{font-family:'Sora', sans-serif; font-weight:700; letter-spacing:-0.02em; line-height:1.12; color:var(--ink);}
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:700; letter-spacing:0.02em;
+    color:var(--blue-dark);
+    background:var(--blue-tint);
+    padding:8px 16px;
+    border-radius:999px;
+    margin-bottom:22px;
+  }
+  .eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--blue);}
+
+  .btn{
+    position:relative;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-family:'Inter', sans-serif; font-weight:700; font-size:15px;
+    padding:15px 28px;
+    border-radius:999px;
+    border:1.5px solid transparent;
+    cursor:pointer;
+    isolation:isolate;
+    transition:transform var(--dur-fast) var(--ease-spring);
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn::before{
+    content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit;
+    opacity:0; transition:opacity var(--dur-fast) var(--ease);
+  }
+  .btn::after{
+    content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit;
+    opacity:0; transition:opacity var(--dur-fast) var(--ease);
+  }
+  .btn-primary{background:var(--ink); color:#fff; box-shadow:var(--shadow-sm);}
+  .btn-primary::after{background:var(--blue-dark);}
+  .btn-primary:hover::after, .btn-primary:focus-visible::after{opacity:1;}
+  .btn-outline{border-color:var(--line); color:var(--ink); background:#fff;}
+  .btn-outline::before{border:1.5px solid var(--ink); border-radius:inherit;}
+  .btn-outline:hover::before, .btn-outline:focus-visible::before{opacity:1;}
+  .btn-block{width:100%;}
+
+  /* ===== HEADER ===== */
+  header{position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  header::after{
+    content:""; position:absolute; left:0; right:0; top:100%; height:24px;
+    background:linear-gradient(180deg, rgba(18,23,43,0.06), transparent);
+    opacity:0; transition:opacity var(--dur) var(--ease); pointer-events:none;
+  }
+  header.scrolled::after{opacity:1;}
+  .nav{display:flex; align-items:center; justify-content:space-between; height:84px;}
+  .logo{font-family:'Sora',sans-serif; font-size:24px; font-weight:800; display:flex; align-items:center; gap:2px; transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-spring);}
+  .logo:hover{opacity:0.75;}
+  .logo:active{transform:scale(0.96);}
+  .logo .dot{color:var(--yellow); -webkit-text-stroke:1px var(--yellow-dark);}
+  .nav-links{display:none; gap:10px;}
+  .nav-links a{
+    position:relative; isolation:isolate;
+    font-size:14px; font-weight:600; color:var(--ink);
+    padding:9px 18px;
+    border-radius:999px;
+    border:1.5px solid var(--line);
+    transition:color .25s var(--ease), transform var(--dur-fast) var(--ease-spring);
+  }
+  .nav-links a::before{
+    content:"";
+    position:absolute; inset:0; z-index:-1;
+    border-radius:inherit;
+    background:var(--blue-tint);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .4s ease;
+  }
+  .nav-links a:hover, .nav-links a:focus-visible{color:var(--blue-dark);}
+  .nav-links a:hover::before, .nav-links a:focus-visible::before{transform:scaleX(1);}
+  .nav-links a:active{transform:scale(0.96);}
+  @media(min-width:900px){.nav-links{display:flex;}}
+  .nav-cta{display:none;}
+  @media(min-width:900px){.nav-cta{display:inline-flex;}}
+  .burger{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:'Inter', sans-serif; font-size:14px; font-weight:700; color:var(--ink);
+    border:1.5px solid var(--ink); border-radius:999px; padding:10px 18px 10px 14px;
+    background:none; cursor:pointer;
+    transition:transform var(--dur-fast) var(--ease-spring);
+  }
+  .burger:active{transform:scale(0.96);}
+  .burger-icon{position:relative; width:16px; height:11px; flex-shrink:0;}
+  .burger-icon span{
+    position:absolute; left:0; width:100%; height:1.6px; border-radius:2px; background:var(--ink);
+    transition:transform var(--dur-fast) var(--ease), top var(--dur-fast) var(--ease);
+  }
+  .burger-icon span:first-child{top:0;}
+  .burger-icon span:last-child{top:100%; transform:translateY(-100%);}
+  .burger.open .burger-icon span:first-child{top:50%; transform:translateY(-50%) rotate(45deg);}
+  .burger.open .burger-icon span:last-child{top:50%; transform:translateY(-50%) rotate(-45deg);}
+  @media(min-width:900px){.burger{display:none;}}
+
+  /* ===== MOBILE MENU ===== */
+  .mobile-menu{
+    position:absolute; top:100%; left:0; right:0; z-index:1;
+    background:#fff;
+    backdrop-filter:blur(16px) saturate(160%); -webkit-backdrop-filter:blur(16px) saturate(160%);
+    border-bottom:1px solid var(--line);
+    border-radius:0 0 28px 28px;
+    box-shadow:var(--shadow);
+    padding:6px 24px 26px;
+    display:flex; flex-direction:column;
+    transform:translateY(-10px); opacity:0; pointer-events:none;
+    transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .mobile-menu.open{transform:translateY(0); opacity:1; pointer-events:auto;}
+  .mobile-menu-links li a{
+    display:block; padding:15px 2px; font-size:16.5px; font-weight:600; color:var(--ink);
+    border-bottom:1px solid var(--line);
+  }
+  .mobile-menu-links li:last-child a{border-bottom:none;}
+  .mobile-menu .btn{margin-top:18px;}
+  @media(min-width:900px){.mobile-menu{display:none;}}
+
+  .mobile-menu-scrim{
+    position:fixed; inset:0; z-index:45;
+    background:rgba(18,23,43,0.28);
+    opacity:0; pointer-events:none;
+    transition:opacity var(--dur) var(--ease);
+  }
+  .mobile-menu-scrim.open{opacity:1; pointer-events:auto;}
+  @media(min-width:900px){.mobile-menu-scrim{display:none;}}
+
+  /* ===== HERO ===== */
+  .hero{position:relative;}
+  .hero-video{
+    position:absolute; inset:0; z-index:0;
+    width:100%; height:100%; object-fit:cover; object-position:center;
+    pointer-events:none;
+  }
+  .hero-video-overlay{
+    position:absolute; inset:0; z-index:0; pointer-events:none;
+    background:
+      linear-gradient(100deg, var(--canvas) 0%, rgba(238,241,248,0.72) 32%, rgba(238,241,248,0.18) 58%, rgba(238,241,248,0.05) 78%),
+      linear-gradient(0deg, var(--canvas) 0%, transparent 16%, transparent 88%, var(--canvas) 100%);
+  }
+  @media(max-width:900px){
+    .hero-video-overlay{background:linear-gradient(180deg, rgba(238,241,248,0.55) 0%, rgba(238,241,248,0.88) 55%, var(--canvas) 100%);}
+  }
+  .hero-inner{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center; position:relative; z-index:1;}
+  @media(max-width:900px){.hero-inner{grid-template-columns:1fr; gap:40px;}}
+  .hero-copy h1{font-size:clamp(36px,4.6vw,58px); margin-bottom:22px;}
+  .hero-copy h1 .accent{color:var(--blue);}
+  .hero-copy p{font-size:17px; color:var(--muted); max-width:460px; margin-bottom:32px;}
+  .hero-actions{display:flex; gap:14px; flex-wrap:wrap;}
+
+  .hero-visual{position:relative;}
+  .hero-photo{
+    aspect-ratio:4/5;
+    border-radius:32px;
+    position:relative;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    background:var(--blue-tint);
+  }
+  .hero-photo img{width:100%; height:100%; object-fit:cover; object-position:center 20%;}
+  .hero-photo::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(190deg, transparent 55%, rgba(18,23,43,0.65) 100%);
+    pointer-events:none;
+  }
+  .hero-photo-inner{
+    position:absolute; left:16px; bottom:16px; z-index:1; color:#fff;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 18px 10px 10px; border-radius:999px;
+  }
+  .hero-photo-avatar{width:32px; height:32px; border-radius:50%; overflow:hidden; flex-shrink:0;}
+  .hero-photo-avatar img{width:100%; height:100%; object-fit:cover;}
+  .hero-photo-label{font-size:11px; font-weight:700; letter-spacing:0.04em; opacity:0.7;}
+  .hero-photo-name{font-family:'Sora',sans-serif; font-size:14px; margin-top:1px;}
+
+  .float-card{
+    position:absolute; left:-24px; bottom:-28px;
+    background:#fff; border-radius:20px; box-shadow:var(--shadow);
+    padding:22px 26px; display:flex; gap:28px;
+    z-index:2;
+  }
+  @media(max-width:520px){.float-card{position:static; margin-top:20px; box-shadow:var(--shadow-sm); flex-wrap:wrap; gap:20px;}}
+  .float-stat .fs-num{font-family:'Sora',sans-serif; font-size:24px; font-weight:800; color:var(--ink);}
+  .float-stat .fs-label{font-size:12px; color:var(--muted); font-weight:600; margin-top:2px;}
+
+  /* ===== SECTION ===== */
+  .section-head{max-width:600px; margin-bottom:40px;}
+  .section-head h2{font-size:clamp(28px,3.2vw,38px);}
+  .section-head p{color:var(--muted); font-size:16px; margin-top:14px;}
+  .section-head.center{margin-left:auto; margin-right:auto; text-align:center;}
+
+  /* ===== CARD STACK (each section IS a card — its rounded top edge
+     rises into view and covers whatever was pinned before it) ===== */
+  .card-section{
+    position:sticky; top:0;
+    min-height:100vh; min-height:100dvh;
+    width:100%;
+    display:flex; align-items:center;
+    overflow:hidden;
+  }
+  .card-section > .wrap{width:100%;}
+  section.card-section{
+    background:var(--canvas);
+    border-radius:clamp(20px,3vw,40px) clamp(20px,3vw,40px) 0 0;
+    border:1px solid rgba(18,23,43,0.09);
+    border-bottom:none;
+    box-shadow:0 -18px 40px -28px rgba(18,23,43,0.28);
+    padding:70px 0;
+  }
+  @media(max-width:640px){section.card-section{padding:44px 0;}}
+
+  /* content card that hugs each section's content against the shared canvas */
+  .section-card{
+    background:#fff;
+    border-radius:28px;
+    padding:52px 56px;
+    box-shadow:var(--shadow-sm);
+  }
+  @media(max-width:700px){.section-card{padding:32px 24px; border-radius:22px;}}
+
+  /* ===== ABOUT / PROGRAM ===== */
+  .about-grid{display:grid; grid-template-columns:1fr 1.1fr; gap:60px; align-items:stretch;}
+  @media(max-width:860px){.about-grid{grid-template-columns:1fr; gap:36px;}}
+  .about-text{display:flex; flex-direction:column; min-width:0;}
+  .about-text p{color:var(--muted); font-size:16px; margin-bottom:18px;}
+  .program-grid{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:16px; min-width:0;}
+  @media(max-width:860px){.program-grid{grid-template-rows:none;}}
+  @media(max-width:520px){.program-grid{grid-template-columns:1fr;}}
+  .program-card{
+    position:relative; isolation:isolate; min-width:0;
+    display:flex; flex-direction:column; justify-content:center;
+    background:var(--bg-soft); border-radius:20px; padding:28px;
+    transition:transform var(--dur-fast) var(--ease-spring);
+  }
+  .program-card::before{
+    content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit;
+    background:var(--blue-tint); opacity:0; transition:opacity var(--dur-fast) var(--ease);
+  }
+  .program-card:hover{transform:translateY(-3px);}
+  .program-card:hover::before{opacity:1;}
+  .program-num{font-family:'Sora',sans-serif; font-size:14px; font-weight:800; color:var(--blue); margin-bottom:16px; display:block;}
+  .about-photo{border-radius:24px; overflow:hidden; margin-top:28px; aspect-ratio:16/11; box-shadow:var(--shadow-sm);}
+  .about-photo img{width:100%; height:100%; object-fit:cover;}
+  .program-card p{font-size:15px; color:var(--ink); font-weight:500; line-height:1.55;}
+
+  /* ===== LECTURER ===== */
+  .lecturer-grid{display:grid; grid-template-columns:300px 1fr; gap:52px; align-items:center;}
+  @media(max-width:820px){.lecturer-grid{grid-template-columns:1fr;}}
+  .lect-photo{
+    aspect-ratio:3/4; border-radius:28px;
+    box-shadow:var(--shadow-sm);
+    overflow:hidden;
+    background:var(--yellow-tint);
+  }
+  .lect-photo img{width:100%; height:100%; object-fit:cover;}
+  .role-pill{
+    display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:700;
+    background:var(--blue-tint); color:var(--blue-dark); padding:8px 16px; border-radius:999px; margin-bottom:18px;
+  }
+  .lect-bio h3{font-size:28px; margin-bottom:14px;}
+  .lect-bio p{color:var(--muted); font-size:15px; max-width:520px; margin-bottom:22px;}
+
+  /* ===== INCLUDED ===== */
+  .includes-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+  @media(max-width:900px){.includes-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:480px){.includes-grid{grid-template-columns:1fr;}}
+  .include-card{
+    position:relative; isolation:isolate; min-width:0;
+    border:1px solid var(--line); border-radius:22px; padding:28px 24px;
+    transition:transform var(--dur-fast) var(--ease-spring);
+  }
+  .include-card::before{
+    content:""; position:absolute; inset:-1px; z-index:-1; border-radius:inherit;
+    background:#fff; box-shadow:var(--shadow-sm);
+    opacity:0; transition:opacity var(--dur-fast) var(--ease);
+  }
+  .include-card:hover{transform:translateY(-2px);}
+  .include-card:hover::before{opacity:1;}
+  .include-ic{width:44px; height:44px; border-radius:14px; background:var(--blue-tint); color:var(--blue); display:flex; align-items:center; justify-content:center; margin-bottom:18px;}
+  .include-card h4{font-size:17px; margin-bottom:8px;}
+  .include-card p{font-size:13px; color:var(--muted);}
+  .provider-note{margin-top:24px; font-size:13px; color:var(--muted);}
+
+  /* ===== ORG BLOCK ===== */
+  .org-block{
+    background:var(--yellow-tint); border-radius:28px; padding:44px;
+    display:grid; grid-template-columns:1fr; gap:28px;
+  }
+  .section-card + .org-block{margin-top:28px;}
+  @media(max-width:640px){.org-block{padding:28px;} .section-card + .org-block{margin-top:20px;}}
+  .org-head{display:flex; align-items:center; gap:14px;}
+  .org-icon{width:36px; height:36px; border-radius:12px; background:var(--yellow); display:flex; align-items:center; justify-content:center; font-weight:800; color:#4A3400; flex-shrink:0;}
+  .org-head h3{font-size:22px;}
+  .org-list{display:flex; flex-direction:column; gap:11px; max-width:680px;}
+  .org-list li{display:flex; align-items:flex-start; gap:11px; color:#5C4212; font-size:14.5px; line-height:1.55;}
+  .org-list li::before{content:""; width:6px; height:6px; margin-top:8px; border-radius:50%; background:var(--yellow-dark); flex-shrink:0;}
+  .spec-tags-viewport{
+    overflow:hidden; margin:0 -44px; padding:0 44px;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
+    mask-image:linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
+  }
+  @media(max-width:640px){.spec-tags-viewport{margin:0 -28px; padding:0 28px;}}
+  .spec-tags-track{
+    display:flex; width:max-content;
+    animation:specScroll 26s linear infinite;
+  }
+  .spec-tags-viewport:hover .spec-tags-track{animation-play-state:paused;}
+  @keyframes specScroll{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+  .spec-tags{display:flex; flex-wrap:nowrap; gap:10px; padding-right:10px;}
+  .spec-tag{font-size:13px; font-weight:600; padding:9px 16px; background:#fff; border-radius:999px; color:#5C4212; white-space:nowrap;}
+
+  /* ===== PRICE ===== */
+  .price-grid{display:grid; grid-template-columns:1fr 1fr; gap:24px;}
+  @media(max-width:860px){.price-grid{grid-template-columns:1fr;}}
+  .price-card{border:1px solid var(--line); border-radius:28px; padding:40px;}
+  .price-card.dark{background:var(--ink); color:#fff; border:none;}
+  .tier-tag{font-size:13px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:20px; display:block;}
+  .tier-row{display:flex; align-items:center; justify-content:space-between; padding:20px 0; border-top:1px solid var(--line);}
+  .tier-row:last-of-type{border-bottom:1px solid var(--line);}
+  .tier-row.inactive{opacity:0.45;}
+  .tier-name{font-size:14.5px; font-weight:700;}
+  .tier-deadline{font-size:12.5px; color:var(--muted); display:block; margin-top:3px;}
+  .tier-price{font-family:'Sora',sans-serif; font-size:24px; font-weight:800;}
+  .price-note{font-size:13.5px; color:var(--muted); margin-top:22px;}
+
+  .price-card.dark h3{color:#fff; font-size:22px; margin-bottom:6px;}
+  .price-card.dark .fp-sub{font-size:13.5px; color:rgba(255,255,255,0.55); margin-bottom:26px;}
+  .field{margin-bottom:16px;}
+  .field-collapsible{
+    display:grid; grid-template-rows:0fr; overflow:hidden;
+    margin-bottom:0;
+    transition:grid-template-rows var(--dur) var(--ease), margin-bottom var(--dur) var(--ease);
+  }
+  .field-collapsible.open{grid-template-rows:1fr; margin-bottom:16px;}
+  .field-collapsible-inner{overflow:hidden; min-height:0; padding:3px 2px;}
+  .field label{display:block; font-size:12px; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.03em;}
+  .field input, .field select{
+    width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16);
+    border-radius:12px; padding:13px 16px; color:#fff; font-family:'Inter'; font-size:14px;
+    line-height:1.4; box-sizing:border-box;
+  }
+  .field select{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    padding-right:40px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 16px center;
+  }
+  .field select option{background:var(--ink); color:#fff;}
+  .field input::placeholder{color:rgba(255,255,255,0.35);}
+  .field input:focus, .field select:focus{outline:2px solid var(--yellow); border-color:transparent;}
+  .field-collapsible-inner input:focus{outline-offset:-2px;}
+  .price-card.dark .btn-primary{background:var(--yellow); color:#4A3400; margin-top:6px;}
+  .price-card.dark .btn-primary::after{background:#ffd166;}
+
+  /* ===== TESTIMONIALS ===== */
+  .testi-carousel{position:relative; max-width:960px; margin:0 auto;}
+  .testi-viewport{position:relative; overflow:hidden; transition:height var(--dur) var(--ease);}
+  .testi-track{position:relative; height:100%;}
+  .testi-slide{
+    position:absolute; top:50%; left:50%; width:min(460px,86vw);
+    transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .testi-card{border:1px solid var(--line); border-radius:24px; padding:36px; background:#fff; text-align:center; box-shadow:var(--shadow-sm); transition:box-shadow var(--dur) var(--ease);}
+  .testi-slide.is-active .testi-card{box-shadow:var(--shadow); border-color:transparent;}
+  .testi-stars{color:var(--yellow-dark); font-size:16px; letter-spacing:2px; margin-bottom:18px;}
+  .testi-text{font-size:16px; color:var(--ink); margin-bottom:26px; line-height:1.65; max-width:460px; margin-left:auto; margin-right:auto;}
+  .testi-person{display:flex; align-items:center; justify-content:center; gap:12px;}
+  .testi-avatar{width:60px; height:60px; border-radius:50%; background:var(--blue-tint); color:var(--blue-dark); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px; flex-shrink:0; overflow:hidden;}
+  .testi-avatar img{width:100%; height:100%; object-fit:cover;}
+  .testi-name{font-size:14px; font-weight:700; text-align:left;}
+  .testi-role{font-size:12.5px; color:var(--muted); text-align:left;}
+
+  .testi-nav{display:flex; align-items:center; justify-content:center; gap:20px; margin-top:28px;}
+  .testi-arrow{
+    position:relative; isolation:isolate;
+    width:44px; height:44px; border-radius:50%; border:1.5px solid var(--line);
+    background:#fff; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform var(--dur-fast) var(--ease-spring);
+    flex-shrink:0;
+  }
+  .testi-arrow::before{
+    content:""; position:absolute; inset:-1.5px; z-index:-1; border-radius:inherit;
+    border:1.5px solid var(--ink); opacity:0; transition:opacity var(--dur-fast) var(--ease);
+  }
+  .testi-arrow:hover::before{opacity:1;}
+  .testi-arrow:active{transform:scale(0.94);}
+  .testi-dots{display:flex; gap:8px;}
+  .testi-dot{position:relative; width:28px; height:28px; background:none; border:none; cursor:pointer; padding:0;}
+  .testi-dot::before, .testi-dot::after{
+    content:""; position:absolute; top:50%; left:50%; border-radius:4px;
+    transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-spring);
+  }
+  .testi-dot::before{width:7px; height:7px; border-radius:50%; background:var(--line); opacity:1; transform:translate(-50%,-50%) scale(1);}
+  .testi-dot::after{width:20px; height:7px; background:var(--blue); opacity:0; transform:translate(-50%,-50%) scaleX(0.35);}
+  .testi-dot.active::before{opacity:0; transform:translate(-50%,-50%) scale(0.6);}
+  .testi-dot.active::after{opacity:1; transform:translate(-50%,-50%) scaleX(1);}
+
+  /* ===== FOOTER ===== */
+  footer{background:var(--ink); color:#fff; padding:72px 0 32px; border-radius:40px 40px 0 0; border:1px solid rgba(255,255,255,0.08); border-bottom:none; box-shadow:0 -18px 40px -28px rgba(18,23,43,0.28);}
+  @media(max-width:640px){footer{padding:48px 0 28px;}}
+  .footer-top{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; padding-bottom:48px; border-bottom:1px solid rgba(255,255,255,0.12);}
+  @media(max-width:700px){.footer-top{grid-template-columns:1fr; gap:32px;}}
+  .footer-logo{font-family:'Sora',sans-serif; font-size:26px; font-weight:800; margin-bottom:16px;}
+  .footer-logo .dot{color:var(--yellow);}
+  .footer-top p{font-size:14px; color:rgba(255,255,255,0.55); max-width:340px;}
+  .footer-col h5{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:rgba(255,255,255,0.4); margin-bottom:16px;}
+  .footer-col a{display:block; font-size:14.5px; color:rgba(255,255,255,0.85); margin-bottom:12px;}
+  .footer-col a:hover{color:var(--yellow);}
+  .footer-location{display:block; font-size:14.5px; color:rgba(255,255,255,0.55);}
+  .footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:28px; flex-wrap:wrap; gap:12px;}
+  .footer-bottom p{font-size:12.5px; color:rgba(255,255,255,0.4);}
+
+  /* ===== LIQUID GLASS ===== */
+  .glass{
+    position:relative;
+    background:rgba(255,255,255,0.55);
+    backdrop-filter:blur(16px) saturate(160%);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,0.7), 0 8px 24px -14px rgba(47,85,232,0.35);
+  }
+  .glass::before{
+    content:""; position:absolute; inset:0; border-radius:inherit; padding:1.2px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 22%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.3) 80%, rgba(255,255,255,0.95) 100%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+    pointer-events:none;
+  }
+  .glass-dark{
+    background:rgba(18,23,43,0.42);
+    backdrop-filter:blur(16px) saturate(160%);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);
+  }
+  .glass-dark::before{
+    background:linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.12) 25%, rgba(255,255,255,0) 45%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.12) 80%, rgba(255,255,255,0.5) 100%);
+  }
+
+  /* CTA glow */
+  .cta-glow{position:relative; display:inline-block;}
+  .cta-glow::before{
+    content:""; position:absolute; inset:-16px; z-index:-1; border-radius:999px;
+    background:radial-gradient(ellipse at center, rgba(255,200,69,0.65) 0%, rgba(255,200,69,0.28) 45%, transparent 72%);
+    opacity:0.5;
+    animation:ctaPulse 3.4s cubic-bezier(.45,0,.55,1) infinite;
+    transition:opacity var(--dur) var(--ease);
+  }
+  .cta-glow:hover::before{opacity:1; animation-play-state:paused;}
+  @keyframes ctaPulse{
+    0%, 100%{opacity:0.4; transform:scale(0.97);}
+    50%{opacity:0.8; transform:scale(1.05);}
+  }
+
+  @keyframes heroPhotoIn{from{opacity:0; transform:scale(0.96) translateY(10px);} to{opacity:1; transform:scale(1) translateY(0);}}
+  .hero-photo{animation:heroPhotoIn var(--dur-slow) var(--ease) .32s both;}
+
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+
+  /* ===== ANIMATIONS ===== */
+
+  @keyframes fadeUp{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+  .hero-copy .eyebrow{animation:fadeUp var(--dur) var(--ease) .1s both;}
+  .hero-copy h1{animation:fadeUp var(--dur) var(--ease) .18s both;}
+  .hero-copy p{animation:fadeUp var(--dur) var(--ease) .26s both;}
+  .hero-copy .hero-actions{animation:fadeUp var(--dur) var(--ease) .34s both;}
+  .hero-visual{animation:fadeUp var(--dur-slow) var(--ease) .26s both;}
+  .float-card{animation:fadeUp var(--dur) var(--ease) .48s both;}
+
+  .reveal{opacity:0; transform:translateY(20px); transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);}
+  .reveal.visible{opacity:1; transform:translateY(0);}
+  .reveal-stagger.visible .r-item{opacity:1; transform:translateY(0);}
+  .reveal-stagger .r-item{opacity:0; transform:translateY(16px); transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);}
+  .reveal-stagger .r-item:nth-child(1){transition-delay:.04s;}
+  .reveal-stagger .r-item:nth-child(2){transition-delay:.1s;}
+  .reveal-stagger .r-item:nth-child(3){transition-delay:.16s;}
+  .reveal-stagger .r-item:nth-child(4){transition-delay:.22s;}
+  .reveal-stagger .r-item:nth-child(5){transition-delay:.28s;}
+  .reveal-stagger .r-item:nth-child(6){transition-delay:.34s;}
+
+  .hero-photo img, .lect-photo img, .about-photo img{transition:transform var(--dur-slow) var(--ease);}
+  .hero-photo:hover img, .lect-photo:hover img, .about-photo:hover img{transform:scale(1.045);}
+
+  .section-reveal{opacity:0; transform:translateY(32px); transition:opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);}
+  .section-reveal.visible{opacity:1; transform:translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .hero-copy *, .hero-visual, .hero-photo, .float-card, .reveal, .reveal-stagger .r-item, .cta-glow::before, .section-reveal{animation:none !important; transition:none !important; opacity:1 !important; transform:none !important;}
+    .hero-video{display:none;}
+    .hero-video-overlay{background:var(--canvas);}
+    .testi-slide, .testi-card, .testi-viewport{transition:none !important;}
+    .spec-tags-track{animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="#hero" class="logo">Self<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">Про семінар</a></li>
+      <li><a href="#lecturer">Лектор</a></li>
+      <li><a href="#included">Умови</a></li>
+      <li><a href="#price">Ціна</a></li>
+      <li><a href="#contacts">Контакти</a></li>
+    </ul>
+    <a href="#price" class="btn btn-primary nav-cta">Записатися</a>
+    <button class="burger" id="burgerBtn" type="button" aria-expanded="false" aria-controls="mobileMenu">
+      <span class="burger-icon"><span></span><span></span></span>
+      <span class="burger-label">Меню</span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <ul class="mobile-menu-links">
+      <li><a href="#about">Про семінар</a></li>
+      <li><a href="#lecturer">Лектор</a></li>
+      <li><a href="#included">Умови</a></li>
+      <li><a href="#price">Ціна</a></li>
+      <li><a href="#contacts">Контакти</a></li>
+    </ul>
+    <a href="#price" class="btn btn-primary btn-block">Записатися</a>
+  </div>
+</header>
+<div class="mobile-menu-scrim" id="mobileMenuScrim"></div>
+
+<main>
+  <!-- HERO -->
+  <section id="hero" class="hero card-section" style="z-index:1;">
+    <video class="hero-video" autoplay muted loop playsinline preload="auto">
+      <source src="https://res.cloudinary.com/iamdkwtu/video/upload/v1786877631/Translucent_glass_waves_transfor__202608151335.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-overlay"></div>
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <div class="eyebrow glass"><span class="dot"></span>Онлайн майстер-клас · УЗД</div>
+        <h1>УЗД захворювань <span class="accent">артерій нижніх кінцівок</span></h1>
+        <p>Практичний розбір алгоритмів дуплексного сканування — від техніки доступу до інтерпретації складних клінічних випадків.</p>
+        <div class="hero-actions">
+          <a href="#price" class="btn btn-primary cta-glow">Записатися на семінар</a>
+          <a href="#about" class="btn btn-outline">Програма семінару</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-photo">
+          <img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=1000&auto=format&fit=crop&q=80" alt="Лектор семінару — лікар ультразвукової діагностики" loading="lazy">
+          <div class="hero-photo-inner glass-dark">
+            <div class="hero-photo-avatar"><img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=100&auto=format&fit=crop&q=80" alt="" loading="lazy"></div>
+            <div>
+              <div class="hero-photo-label">Лектор семінару</div>
+              <div class="hero-photo-name">Олена Ковальчук</div>
+            </div>
+          </div>
+        </div>
+        <div class="float-card">
+          <div class="float-stat">
+            <div class="fs-num">03–04.09</div>
+            <div class="fs-label">Дата проведення</div>
+          </div>
+          <div class="float-stat">
+            <div class="fs-num">7</div>
+            <div class="fs-label">Балів БПР</div>
+          </div>
+          <div class="float-stat">
+            <div class="fs-num">1200 ₴</div>
+            <div class="fs-label">Рання реєстрація</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section-reveal card-section" style="z-index:2;">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow"><span class="dot"></span>Про семінар</div>
+        <h2>Що ви отримаєте</h2>
+      </div>
+      <div class="section-card">
+        <div class="about-grid">
+          <div class="about-text reveal">
+            <p>Дуплексне сканування артерій нижніх кінцівок — один з найчастіше призначуваних видів УЗД-обстежень і водночас один з найскладніших для точної інтерпретації.</p>
+            <p>Семінар побудовано навколо реальних клінічних кейсів: за два дні ви пройдете шлях від базової техніки сканування до розбору межових випадків із щоденної практики.</p>
+            <div class="about-photo">
+              <img src="https://images.unsplash.com/photo-1691933880096-4046bc9e2fa0?w=900&auto=format&fit=crop&q=80" alt="Проведення ультразвукового дослідження" loading="lazy">
+            </div>
+          </div>
+          <div class="program-grid reveal-stagger reveal">
+            <div class="program-card r-item"><span class="program-num">01</span><p>Техніка та стандартні доступи дуплексного сканування артерій</p></div>
+            <div class="program-card r-item"><span class="program-num">02</span><p>Оцінка ступеня стенозу та критерії гемодинамічної значущості</p></div>
+            <div class="program-card r-item"><span class="program-num">03</span><p>Диференціація оклюзії, стенозу та артефактів сканування</p></div>
+            <div class="program-card r-item"><span class="program-num">04</span><p>Розбір складних клінічних випадків та відповіді на запитання</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LECTURER -->
+  <section id="lecturer" class="section-reveal card-section" style="z-index:3;">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow"><span class="dot"></span>Лектор</div>
+        <h2>Веде фахівець із практичним досвідом</h2>
+      </div>
+      <div class="section-card">
+      <div class="lecturer-grid reveal">
+        <div class="lect-photo">
+          <img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=800&auto=format&fit=crop&q=80&crop=faces" alt="Олена Ковальчук, лектор семінару" loading="lazy">
+        </div>
+        <div class="lect-bio">
+          <div class="role-pill">Кандидат медичних наук · Лікар УЗД</div>
+          <h3>Олена Ковальчук</h3>
+          <p>Понад 12 років практики в ультразвуковій діагностиці судин, зокрема артерій та вен нижніх кінцівок. Викладає на профільних курсах для лікарів УЗД, регулярно проводить майстер-класи з розбором складних клінічних випадків із власної практики.</p>
+          <a href="#" class="btn btn-outline" style="padding:12px 22px; font-size:14px;">Профіль лектора ↗</a>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INCLUDED -->
+  <section id="included" class="section-reveal card-section" style="z-index:4;">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow"><span class="dot"></span>Умови</div>
+        <h2>Формат участі</h2>
+      </div>
+      <div class="section-card">
+        <div class="includes-grid reveal-stagger reveal">
+          <div class="include-card r-item">
+            <div class="include-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M21 8l-4 3 4 3V8z"/></svg></div>
+            <h4>Платформа Zoom</h4>
+            <p>Посилання на трансляцію надсилається за годину до початку, діє два дні.</p>
+          </div>
+          <div class="include-card r-item">
+            <div class="include-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+            <h4>30 днів запису</h4>
+            <p>Відеозапис обох днів семінару доступний для перегляду протягом місяця.</p>
+          </div>
+          <div class="include-card r-item">
+            <div class="include-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+            <h4>Тестування</h4>
+            <p>Коротке тестування після завершення заходу, необхідне для сертифіката.</p>
+          </div>
+          <div class="include-card r-item">
+            <div class="include-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a5 5 0 100-10 5 5 0 000 10z"/><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"/></svg></div>
+            <h4>Сертифікат · 7 балів БПР</h4>
+            <p>Надходить на email протягом 10 робочих днів після завершення семінару.</p>
+          </div>
+        </div>
+        <p class="provider-note">Провайдер БПР — організатор заходу. Self виступає партнером із реєстрації та оплати участі.</p>
+      </div>
+      <div class="org-block reveal">
+        <div class="org-head">
+          <div class="org-icon">!</div>
+          <h3>Зверніть увагу перед реєстрацією</h3>
+        </div>
+        <ul class="org-list">
+          <li>Бали БПР зараховуються лише за спеціальностями зі списку нижче — 7 балів.</li>
+          <li>Спеціальності немає в переліку — за сертифікатом буде зараховано 1 бал.</li>
+          <li>Атестуєтесь одразу за кількома спеціальностями зі списку — бали зараховуються по кожній з них.</li>
+        </ul>
+        <div class="spec-tags-viewport">
+          <div class="spec-tags-track">
+          <div class="spec-tags">
+            <span class="spec-tag">Анестезіологія</span>
+            <span class="spec-tag">Внутрішні хвороби</span>
+            <span class="spec-tag">Загальна практика — сімейна медицина</span>
+            <span class="spec-tag">Інтервенційна кардіологія</span>
+            <span class="spec-tag">Кардіологія</span>
+            <span class="spec-tag">Ревматологія</span>
+            <span class="spec-tag">Судинна хірургія</span>
+            <span class="spec-tag">Ультразвукова діагностика</span>
+            <span class="spec-tag">Функціональна діагностика</span>
+            <span class="spec-tag">Хірургія серця та магістральних судин</span>
+          </div>
+          <div class="spec-tags" aria-hidden="true">
+            <span class="spec-tag">Анестезіологія</span>
+            <span class="spec-tag">Внутрішні хвороби</span>
+            <span class="spec-tag">Загальна практика — сімейна медицина</span>
+            <span class="spec-tag">Інтервенційна кардіологія</span>
+            <span class="spec-tag">Кардіологія</span>
+            <span class="spec-tag">Ревматологія</span>
+            <span class="spec-tag">Судинна хірургія</span>
+            <span class="spec-tag">Ультразвукова діагностика</span>
+            <span class="spec-tag">Функціональна діагностика</span>
+            <span class="spec-tag">Хірургія серця та магістральних судин</span>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <!-- TODO: демо-контент, замінити на реальні відгуки перед публікацією -->
+  <section class="section-reveal card-section" style="z-index:5;">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow"><span class="dot"></span>Відгуки</div>
+        <h2>Що кажуть лікарі</h2>
+      </div>
+      <div class="testi-carousel reveal">
+        <div class="testi-viewport">
+          <div class="testi-track" id="testiTrack">
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Дуже структуровано і по суті — без води. Одразу після семінару застосувала підхід до складного випадку на прийомі."</p>
+                <div class="testi-person"><div class="testi-avatar">НВ</div><div><div class="testi-name">Наталія В.</div><div class="testi-role">Лікар УЗД · Київ</div></div></div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Подобається, що розбирають реальні кейси, а не тільки теорію. Лектор відповідав на запитання навіть після завершення."</p>
+                <div class="testi-person"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?w=100&auto=format&fit=crop&q=80" alt="" loading="lazy"></div><div><div class="testi-name">Олег К.</div><div class="testi-role">Судинний хірург · Львів</div></div></div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Зручний формат — запис можна передивитись. Сертифікат прийшов швидко, бали зарахували без проблем."</p>
+                <div class="testi-person"><div class="testi-avatar">ІМ</div><div><div class="testi-name">Ірина М.</div><div class="testi-role">Кардіолог · Харків</div></div></div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Найкраще пояснення критеріїв стенозу, яке я чула. Одразу видно, що лектор працює з цим щодня, а не просто викладає теорію."</p>
+                <div class="testi-person"><div class="testi-avatar">СП</div><div><div class="testi-name">Світлана П.</div><div class="testi-role">Лікар функціональної діагностики · Одеса</div></div></div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Реєстрація і оплата зайняли п'ять хвилин, посилання на Zoom прийшло вчасно. Організаційно все чітко."</p>
+                <div class="testi-person"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1758691463582-11aea602cd4a?w=100&auto=format&fit=crop&q=80" alt="" loading="lazy"></div><div><div class="testi-name">Дмитро Т.</div><div class="testi-role">Кардіолог · Дніпро</div></div></div>
+              </div>
+            </div>
+            <div class="testi-slide">
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p class="testi-text">"Розбір кейсів із запитаннями від аудиторії — саме те, чого не вистачає на більшості онлайн-курсів. Прийду ще."</p>
+                <div class="testi-person"><div class="testi-avatar">ЮЛ</div><div><div class="testi-name">Юлія Л.</div><div class="testi-role">Лікар УЗД · Івано-Франківськ</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-nav">
+          <button class="testi-arrow" id="testiPrev" aria-label="Попередній відгук">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="testi-dots" id="testiDots"></div>
+          <button class="testi-arrow" id="testiNext" aria-label="Наступний відгук">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICE -->
+  <section id="price" class="section-reveal card-section" style="z-index:6;">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow"><span class="dot"></span>Ціна</div>
+        <h2>Забронювати місце на семінарі</h2>
+      </div>
+
+      <div class="price-grid reveal">
+        <div class="price-card">
+          <span class="tier-tag">Вартість участі</span>
+
+          <div class="tier-row">
+            <div>
+              <div class="tier-name">Рання реєстрація</div>
+              <span class="tier-deadline">До 25.08.2026</span>
+            </div>
+            <div class="tier-price">1200 ₴</div>
+          </div>
+
+          <div class="tier-row inactive">
+            <div>
+              <div class="tier-name">Стандартна реєстрація</div>
+              <span class="tier-deadline">Після 25.08.2026</span>
+            </div>
+            <div class="tier-price">1400 ₴</div>
+          </div>
+
+          <p class="price-note">У вартість входить участь в обох днях семінару, доступ до запису на 30 днів, тестування та сертифікат із балами БПР.</p>
+        </div>
+
+        <div class="price-card dark">
+          <h3>Форма реєстрації</h3>
+          <p class="fp-sub">Заповніть дані — після цього ви перейдете на сторінку оплати.</p>
+
+          <div class="field">
+            <label>ПІБ</label>
+            <input type="text" placeholder="Прізвище, ім'я, по батькові">
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" placeholder="name@example.com">
+          </div>
+          <div class="field">
+            <label>Телефон</label>
+            <input type="tel" placeholder="+380 XX XXX XX XX">
+          </div>
+          <div class="field">
+            <label>Спеціальність</label>
+            <select id="specialtySelect">
+              <option>Оберіть спеціальність</option>
+              <option>Ультразвукова діагностика</option>
+              <option>Кардіологія</option>
+              <option>Судинна хірургія</option>
+              <option>Інша</option>
+            </select>
+          </div>
+          <div class="field field-collapsible" id="otherSpecialtyField">
+            <div class="field-collapsible-inner">
+              <label for="otherSpecialtyInput">Вкажіть спеціальність</label>
+              <input type="text" id="otherSpecialtyInput" placeholder="Ваша спеціальність">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block">Оплатити участь</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contacts" class="section-reveal card-section" style="z-index:7;">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo">Self<span class="dot">.</span></div>
+        <p>Освітня платформа для студентів, лікарів та інших працівників медичної сфери. Навчання, яке цікаво, динамічно й комфортно.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Контакти</h5>
+        <a href="tel:+380504741441">+380 50 474 14 41</a>
+        <a href="mailto:self.co.ua@gmail.com">self.co.ua@gmail.com</a>
+        <span class="footer-location">Київ, Україна</span>
+      </div>
+      <div class="footer-col">
+        <h5>Соцмережі</h5>
+        <a href="https://www.facebook.com/self.your.medical.education" target="_blank" rel="noopener">Facebook ↗</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Self · Освітня платформа</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var track = document.getElementById('testiTrack');
+  var viewport = document.querySelector('.testi-viewport');
+  var slides = track.querySelectorAll('.testi-slide');
+  var dotsWrap = document.getElementById('testiDots');
+  var prevBtn = document.getElementById('testiPrev');
+  var nextBtn = document.getElementById('testiNext');
+  var index = 0;
+  var total = slides.length;
+
+  for (var i = 0; i < total; i++) {
+    var dot = document.createElement('button');
+    dot.className = 'testi-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Перейти до відгуку ' + (i + 1));
+    dot.addEventListener('click', (function(idx){ return function(){ goTo(idx); }; })(i));
+    dotsWrap.appendChild(dot);
+  }
+  var dots = dotsWrap.querySelectorAll('.testi-dot');
+
+  slides.forEach(function(slide, i){
+    slide.addEventListener('click', function(){ if (i !== index) goTo(i); });
+  });
+
+  function offsetStep(){
+    var w = window.innerWidth;
+    if (w < 480) return 120;
+    if (w < 768) return 190;
+    return 280;
+  }
+
+  function render(){
+    var step = offsetStep();
+    slides.forEach(function(slide, i){
+      var diff = i - index;
+      diff = ((diff % total) + total) % total;
+      if (diff > total / 2) diff -= total;
+      var absDiff = Math.abs(diff);
+      var isActive = diff === 0;
+      var scale = isActive ? 1 : Math.max(0.8, 1 - absDiff * 0.14);
+      var opacity = isActive ? 1 : (absDiff === 1 ? 0.42 : 0);
+      slide.style.transform = 'translate(-50%,-50%) translateX(' + (diff * step) + 'px) scale(' + scale + ')';
+      slide.style.opacity = opacity;
+      slide.style.zIndex = 10 - absDiff;
+      slide.style.pointerEvents = absDiff <= 1 ? 'auto' : 'none';
+      slide.classList.toggle('is-active', isActive);
+    });
+    viewport.style.height = slides[index].offsetHeight + 'px';
+    dots.forEach(function(d, i){ d.classList.toggle('active', i === index); });
+  }
+  function goTo(i){ index = (i + total) % total; render(); }
+
+  prevBtn.addEventListener('click', function(){ goTo(index - 1); });
+  nextBtn.addEventListener('click', function(){ goTo(index + 1); });
+  window.addEventListener('resize', render);
+
+  render();
+
+  // Respect reduced-motion: don't decode/play the hero background video
+  var heroVideo = document.querySelector('.hero-video');
+  if (heroVideo && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    heroVideo.pause();
+    heroVideo.removeAttribute('autoplay');
+  }
+
+  // "Інша" спеціальність — розкриває поле для ручного вводу
+  var specialtySelect = document.getElementById('specialtySelect');
+  var otherSpecialtyField = document.getElementById('otherSpecialtyField');
+  var otherSpecialtyInput = document.getElementById('otherSpecialtyInput');
+  specialtySelect.addEventListener('change', function(){
+    var isOther = specialtySelect.value === 'Інша';
+    otherSpecialtyField.classList.toggle('open', isOther);
+    if (isOther) {
+      otherSpecialtyInput.setAttribute('required', '');
+      setTimeout(function(){ otherSpecialtyInput.focus(); }, 260);
+    } else {
+      otherSpecialtyInput.removeAttribute('required');
+      otherSpecialtyInput.value = '';
+    }
+  });
+
+  // Mobile menu
+  var burgerBtn = document.getElementById('burgerBtn');
+  var mobileMenu = document.getElementById('mobileMenu');
+  var mobileMenuScrim = document.getElementById('mobileMenuScrim');
+  function closeMobileMenu(){
+    burgerBtn.classList.remove('open');
+    burgerBtn.setAttribute('aria-expanded', 'false');
+    burgerBtn.querySelector('.burger-label').textContent = 'Меню';
+    mobileMenu.classList.remove('open');
+    mobileMenuScrim.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function openMobileMenu(){
+    burgerBtn.classList.add('open');
+    burgerBtn.setAttribute('aria-expanded', 'true');
+    burgerBtn.querySelector('.burger-label').textContent = 'Закрити';
+    mobileMenu.classList.add('open');
+    mobileMenuScrim.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  burgerBtn.addEventListener('click', function(){
+    if (mobileMenu.classList.contains('open')) { closeMobileMenu(); } else { openMobileMenu(); }
+  });
+  mobileMenuScrim.addEventListener('click', closeMobileMenu);
+  mobileMenu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMobileMenu); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeMobileMenu();
+  });
+  window.addEventListener('resize', function(){
+    if (window.innerWidth >= 900) closeMobileMenu();
+  });
+
+  // Header shadow on scroll
+  var header = document.querySelector('header');
+  window.addEventListener('scroll', function(){
+    header.classList.toggle('scrolled', window.scrollY > 8);
+  }, { passive: true });
+
+  // Anchor navigation — driven manually instead of native hash-jump.
+  // offsetTop is unreliable here: browsers can report it relative to a
+  // sticky element's CURRENT (stuck) position instead of its true flow
+  // position, so it silently breaks once you've scrolled past a section.
+  // Summing rendered heights of the stacked cards sidesteps that —
+  // height doesn't change whether a card is stuck or not.
+  function stackTop(target){
+    var stack = document.querySelectorAll('main > .card-section, footer.card-section');
+    var top = 0;
+    for (var i = 0; i < stack.length; i++){
+      if (stack[i] === target) return top;
+      top += stack[i].getBoundingClientRect().height;
+    }
+    return top;
+  }
+  function easeInOutCubic(t){ return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function glideTo(targetY){
+    var startY = window.pageYOffset;
+    var diff = targetY - startY;
+    if (Math.abs(diff) < 1) return;
+    var duration = Math.min(700, Math.max(260, Math.abs(diff) * 0.28));
+    var startTime = null;
+    function step(ts){
+      if (startTime === null) startTime = ts;
+      var progress = Math.min((ts - startTime) / duration, 1);
+      window.scrollTo({ top: startY + diff * easeInOutCubic(progress), left: 0, behavior: 'auto' });
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  document.querySelectorAll('a[href^="#"]').forEach(function(link){
+    var id = link.getAttribute('href').slice(1);
+    if (!id) return;
+    var target = document.getElementById(id);
+    if (!target) return;
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      glideTo(stackTop(target));
+      history.pushState(null, '', '#' + id);
+    });
+  });
+
+  // Reveal on scroll
+  if ('IntersectionObserver' in window) {
+    var ioInner = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          ioInner.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ ioInner.observe(el); });
+
+    var ioSection = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          ioSection.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.06, rootMargin: '0px 0px -10% 0px' });
+    document.querySelectorAll('.section-reveal').forEach(function(el){ ioSection.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal, .section-reveal').forEach(function(el){ el.classList.add('visible'); });
+  }
+})();
+</script>
+</body>
+</html>
