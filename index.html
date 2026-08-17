@@ -193,10 +193,11 @@
     box-shadow:var(--shadow);
     padding:6px 24px 26px;
     display:flex; flex-direction:column;
-    transform:translateY(-10px); opacity:0; pointer-events:none;
-    transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+    transform-origin:top;
+    transform:translateY(-18px) scale(0.97); opacity:0; pointer-events:none;
+    transition:transform .5s var(--ease-spring), opacity var(--dur-fast) var(--ease);
   }
-  .mobile-menu.open{transform:translateY(0); opacity:1; pointer-events:auto;}
+  .mobile-menu.open{transform:translateY(0) scale(1); opacity:1; pointer-events:auto;}
   .mobile-menu-links li a{
     display:block; padding:15px 2px; font-size:16.5px; font-weight:600; color:var(--ink);
     border-bottom:1px solid var(--line);
@@ -242,6 +243,7 @@
   .hero-photo{
     aspect-ratio:4/4.4;
     max-height:min(58vh,620px);
+    width:100%;
     border-radius:32px;
     position:relative;
     box-shadow:var(--shadow);
@@ -254,15 +256,18 @@
     background:linear-gradient(190deg, transparent 55%, rgba(18,23,43,0.65) 100%);
     pointer-events:none;
   }
+  /* Hidden above the tablet breakpoint: .float-card sits absolutely
+     over this same bottom-left corner of the photo on desktop and
+     fully covers it there, so it's rendered for nothing until the
+     layout narrows and float-card unstacks below the photo. */
   .hero-photo-inner{
-    position:absolute; left:16px; bottom:16px; z-index:1; color:#fff;
-    display:inline-flex; align-items:center; gap:10px;
-    padding:10px 18px 10px 10px; border-radius:999px;
+    display:none; position:absolute; left:16px; bottom:16px; z-index:1; color:#fff;
+    align-items:center; gap:10px;
+    padding:12px 18px; border-radius:999px;
   }
-  .hero-photo-avatar{width:32px; height:32px; border-radius:50%; overflow:hidden; flex-shrink:0;}
-  .hero-photo-avatar img{width:100%; height:100%; object-fit:cover;}
   .hero-photo-label{font-size:11px; font-weight:700; letter-spacing:0.04em; opacity:0.7;}
   .hero-photo-name{font-family:'Sora',sans-serif; font-size:14px; margin-top:1px;}
+  @media(max-width:899px){.hero-photo-inner{display:inline-flex;}}
 
   .float-card{
     position:absolute; left:-24px; bottom:-28px;
@@ -281,80 +286,35 @@
   .section-head.center{margin-left:auto; margin-right:auto; text-align:center;}
 
   /* ===== CARD STACK ===== */
-  /* The sticky slot is identical and uniform for every section — this is
-     the one thing that has to be 100% reliable, so it never varies. The
-     "peek behind the next card" effect lives entirely on .card-face, a
-     purely visual inner layer offset by margin-top. Since the sticky
-     math never changes, no section can ever misbehave relative to the
-     others (which is what kept happening when each section had its own
-     sticky offset — the last ones ran out of room and glitched). */
+  /* Every section is a normal-flow card — no position:sticky, no fixed
+     card height, no internal scroll container. This used to be pinned
+     with a parallax "peek" on desktop, but several sections' real content
+     is taller than one screen at common window heights, which made the
+     internal scroll container a genuine necessity rather than dead code —
+     and that nested scroll is exactly what caused the scroll-chaining
+     glitches (content desyncing from the pinned card above it, harsh
+     snaps, premature cover-over). This is the same reliable, always-fits
+     layout mobile already used successfully. */
   .card-section{
-    --peek:0px;
-    position:sticky; top:calc(var(--header-h) + var(--peek));
-    height:calc(100vh - var(--header-h)); height:calc(100dvh - var(--header-h));
+    position:relative;
     width:100%;
-    overflow:hidden;
   }
+  section.card-section{margin-bottom:20px;}
   .card-face{
     position:relative;
-    width:100%; height:100%;
-    display:flex; align-items:flex-start; align-items:safe center;
+    width:100%;
+    display:block;
     overflow:hidden;
   }
-  .card-face > .wrap{
-    width:100%;
-    max-height:100%;
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior:contain;
-    scrollbar-width:none;
-  }
-  .card-face > .wrap::-webkit-scrollbar{display:none; width:0; height:0;}
-  /* hero's real content always fits — the only "overflow" was the
-     absolutely-positioned float-card's decorative bleed being counted
-     as scrollable area even though nothing is actually clipped. */
-  #hero .card-face > .wrap{overflow-y:visible;}
-  /* Below ~900px the "pinned card" effect fights touch scrolling too
-     unreliably across mobile browsers — content taller than one screen
-     could never be fully read. Fall back to a plain, always-reliable
-     stacked layout: sections keep their card look (bg/radius/shadow)
-     but scroll normally, no sticky pinning, no nested scroll container. */
-  @media(max-width:899px){
-    .card-section{
-      position:relative; top:auto;
-      height:auto; min-height:0;
-    }
-    section.card-section{margin-bottom:20px;}
-    main > section.card-section:last-of-type{margin-bottom:0;}
-    .card-face{
-      margin-top:0; height:auto;
-      display:block;
-      overflow:hidden;
-    }
-    .card-face > .wrap{
-      max-height:none;
-      overflow-y:visible;
-      -webkit-overflow-scrolling:auto;
-      overscroll-behavior:auto;
-    }
-  }
+  .card-face > .wrap{width:100%;}
   section .card-face{
     background:var(--canvas);
     border-radius:clamp(20px,3vw,40px);
-    border:1px solid rgba(18,23,43,0.09);
+    border:1.5px solid rgba(18,23,43,0.14);
+    box-shadow:var(--shadow);
     padding:70px 0;
   }
-  @media(max-width:640px){section .card-face{padding:44px 0;}}
-  /* cards no longer fully cover one another with the parallax peek —
-     a card's bottom edge can now show past the next one, so every
-     corner needs to read as rounded, not just the top. */
-  @media(max-width:899px){
-    section .card-face{
-      border-radius:clamp(20px,5vw,32px);
-      border:1.5px solid rgba(18,23,43,0.14);
-      box-shadow:var(--shadow);
-    }
-  }
+  @media(max-width:640px){section .card-face{padding:44px 0; border-radius:clamp(20px,5vw,32px);}}
   footer .card-face{
     background:var(--ink); color:#fff;
     padding:72px 0 calc(32px + env(safe-area-inset-bottom, 0px));
@@ -449,10 +409,15 @@
   .org-list li{display:flex; align-items:flex-start; gap:11px; color:#5C4212; font-size:14.5px; line-height:1.55;}
   .org-list li::before{content:""; width:6px; height:6px; margin-top:8px; border-radius:50%; background:var(--yellow-dark); flex-shrink:0;}
   .spec-tags-viewport{
-    overflow:hidden; margin:0 -44px; padding:0 44px;
+    overflow-x:auto; overflow-y:hidden; margin:0 -44px; padding:0 44px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
     -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
     mask-image:linear-gradient(90deg, transparent 0, #000 64px, #000 calc(100% - 64px), transparent 100%);
   }
+  .spec-tags-viewport::-webkit-scrollbar{display:none; width:0; height:0;}
+  .spec-tags-viewport{cursor:grab;}
+  .spec-tags-viewport.dragging{cursor:grabbing;}
+  .spec-tags-viewport.dragging .spec-tags-track{animation-play-state:paused;}
   @media(max-width:640px){.spec-tags-viewport{margin:0 -28px; padding:0 28px;}}
   .spec-tags-track{
     display:flex; width:max-content;
@@ -511,11 +476,15 @@
 
   /* ===== TESTIMONIALS ===== */
   .testi-carousel{position:relative; max-width:960px; margin:0 auto;}
-  .testi-viewport{position:relative; overflow:hidden; transition:height var(--dur) var(--ease);}
+  .testi-viewport{
+    position:relative; overflow:hidden; transition:height var(--dur) var(--ease);
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.5) 70px, #000 160px, #000 calc(100% - 160px), rgba(0,0,0,0.5) calc(100% - 70px), transparent 100%);
+    mask-image:linear-gradient(90deg, transparent 0, rgba(0,0,0,0.5) 70px, #000 160px, #000 calc(100% - 160px), rgba(0,0,0,0.5) calc(100% - 70px), transparent 100%);
+  }
   .testi-track{position:relative; height:100%;}
   .testi-slide{
     position:absolute; top:50%; left:50%; width:min(460px,86vw);
-    transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+    transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease), filter var(--dur) var(--ease);
   }
   .testi-card{border:1px solid var(--line); border-radius:24px; padding:36px; background:#fff; text-align:center; box-shadow:var(--shadow-sm); transition:box-shadow var(--dur) var(--ease);}
   .testi-slide.is-active .testi-card{box-shadow:var(--shadow); border-color:transparent;}
@@ -688,7 +657,7 @@
 
 <main>
   <!-- HERO -->
-  <section id="hero" class="hero card-section" style="z-index:1; --peek:0px;">
+  <section id="hero" class="hero card-section">
     <div class="card-face">
     <video class="hero-video" autoplay muted loop playsinline preload="auto">
       <source src="https://res.cloudinary.com/iamdkwtu/video/upload/v1786877631/Translucent_glass_waves_transfor__202608151335.mp4" type="video/mp4">
@@ -709,7 +678,6 @@
         <div class="hero-photo">
           <img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=1000&auto=format&fit=crop&q=80" alt="Лектор семінару — лікар ультразвукової діагностики" width="1000" height="1250" fetchpriority="high">
           <div class="hero-photo-inner glass-dark">
-            <div class="hero-photo-avatar"><img src="https://images.unsplash.com/photo-1673865641073-4479f93a7776?w=100&auto=format&fit=crop&q=80" alt="" width="100" height="100" loading="lazy"></div>
             <div>
               <div class="hero-photo-label">Лектор семінару</div>
               <div class="hero-photo-name">Олена Ковальчук</div>
@@ -736,7 +704,7 @@
   </section>
 
   <!-- ABOUT -->
-  <section id="about" class="section-reveal card-section" style="z-index:2; --peek:16px;">
+  <section id="about" class="section-reveal card-section">
     <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
@@ -765,7 +733,7 @@
   </section>
 
   <!-- LECTURER -->
-  <section id="lecturer" class="section-reveal card-section" style="z-index:3; --peek:32px;">
+  <section id="lecturer" class="section-reveal card-section">
     <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
@@ -791,7 +759,7 @@
   </section>
 
   <!-- INCLUDED -->
-  <section id="included" class="section-reveal card-section" style="z-index:4; --peek:48px;">
+  <section id="included" class="section-reveal card-section">
     <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
@@ -868,7 +836,7 @@
 
   <!-- TESTIMONIALS -->
   <!-- TODO: демо-контент, замінити на реальні відгуки перед публікацією -->
-  <section class="section-reveal card-section" style="z-index:5; --peek:64px;">
+  <section class="section-reveal card-section">
     <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
@@ -937,7 +905,7 @@
   </section>
 
   <!-- PRICE -->
-  <section id="price" class="section-reveal card-section" style="z-index:6; --peek:80px;">
+  <section id="price" class="section-reveal card-section">
     <div class="card-face">
     <div class="wrap">
       <div class="section-head reveal">
@@ -1014,7 +982,7 @@
   </section>
 </main>
 
-<footer id="contacts" class="section-reveal card-section" style="z-index:7; --peek:96px;">
+<footer id="contacts" class="section-reveal card-section">
   <div class="card-face">
   <div class="wrap">
     <div class="footer-frame">
@@ -1075,6 +1043,7 @@
 
   function render(){
     var step = offsetStep();
+    var isMobile = window.innerWidth < 768;
     slides.forEach(function(slide, i){
       var diff = i - index;
       diff = ((diff % total) + total) % total;
@@ -1082,11 +1051,16 @@
       var absDiff = Math.abs(diff);
       var isActive = diff === 0;
       var scale = isActive ? 1 : Math.max(0.8, 1 - absDiff * 0.14);
-      var opacity = isActive ? 1 : (absDiff === 1 ? 0.42 : 0);
+      // Mobile: only the active card is ever visible — the side peeks
+      // read as barely-there clutter on a narrow screen, so it's a
+      // straight single-card carousel there instead.
+      var opacity = isActive ? 1 : (isMobile ? 0 : (absDiff === 1 ? 0.32 : 0));
+      var blur = isActive ? 0 : Math.min(8, absDiff * 5);
       slide.style.transform = 'translate(-50%,-50%) translateX(' + (diff * step) + 'px) scale(' + scale + ')';
       slide.style.opacity = opacity;
+      slide.style.filter = isActive ? 'none' : 'blur(' + blur + 'px)';
       slide.style.zIndex = 10 - absDiff;
-      slide.style.pointerEvents = absDiff <= 1 ? 'auto' : 'none';
+      slide.style.pointerEvents = (isMobile ? isActive : absDiff <= 1) ? 'auto' : 'none';
       slide.classList.toggle('is-active', isActive);
     });
     viewport.style.height = slides[index].offsetHeight + 'px';
@@ -1134,6 +1108,40 @@
     }
   });
 
+  // Specialty tags — let a plain vertical mouse wheel scroll it
+  // horizontally, and support click-and-drag (native overflow-x only
+  // responds to trackpad/touch gestures or the scrollbar, which we hide).
+  var specTagsViewport = document.querySelector('.spec-tags-viewport');
+  if (specTagsViewport) {
+    specTagsViewport.addEventListener('wheel', function(e){
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      specTagsViewport.scrollLeft += e.deltaY;
+    }, { passive: false });
+
+    var specDragging = false, specDragStartX = 0, specDragStartScroll = 0, specDragMoved = false;
+    specTagsViewport.addEventListener('pointerdown', function(e){
+      specDragging = true; specDragMoved = false;
+      specDragStartX = e.clientX;
+      specDragStartScroll = specTagsViewport.scrollLeft;
+      specTagsViewport.classList.add('dragging');
+    });
+    window.addEventListener('pointermove', function(e){
+      if (!specDragging) return;
+      var dx = e.clientX - specDragStartX;
+      if (Math.abs(dx) > 3) specDragMoved = true;
+      specTagsViewport.scrollLeft = specDragStartScroll - dx;
+    });
+    window.addEventListener('pointerup', function(){
+      if (!specDragging) return;
+      specDragging = false;
+      specTagsViewport.classList.remove('dragging');
+    });
+    specTagsViewport.addEventListener('click', function(e){
+      if (specDragMoved) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+  }
+
   // Mobile menu
   var burgerBtn = document.getElementById('burgerBtn');
   var mobileMenu = document.getElementById('mobileMenu');
@@ -1175,20 +1183,10 @@
     header.classList.toggle('scrolled', window.scrollY > 8);
   }, { passive: true });
 
-  // Anchor navigation — driven manually instead of native hash-jump.
-  // offsetTop is unreliable here: browsers can report it relative to a
-  // sticky element's CURRENT (stuck) position instead of its true flow
-  // position, so it silently breaks once you've scrolled past a section.
-  // Summing rendered heights of the stacked cards sidesteps that —
-  // height doesn't change whether a card is stuck or not.
-  function stackTop(target){
-    var stack = document.querySelectorAll('main > .card-section, footer.card-section');
-    var top = 0;
-    for (var i = 0; i < stack.length; i++){
-      if (stack[i] === target) return top;
-      top += stack[i].getBoundingClientRect().height;
-    }
-    return top;
+  // Anchor navigation — driven manually so we can glide with custom easing
+  // instead of the native instant hash-jump.
+  function docTop(target){
+    return target.getBoundingClientRect().top + window.pageYOffset;
   }
   function easeInOutCubic(t){ return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
   function glideTo(targetY){
@@ -1212,7 +1210,7 @@
     if (!target) return;
     link.addEventListener('click', function(e){
       e.preventDefault();
-      glideTo(stackTop(target));
+      glideTo(docTop(target));
       history.pushState(null, '', '#' + id);
     });
   });
