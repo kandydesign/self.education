@@ -53,7 +53,7 @@
     --dur-slow:.8s;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth; scroll-padding-top:var(--header-h); overscroll-behavior-y:none;}
+  html{scroll-behavior:smooth; scroll-padding-top:var(--header-h);}
   body{
     background:var(--stage);
     color:var(--ink);
@@ -62,7 +62,6 @@
     line-height:1.65;
     -webkit-font-smoothing:antialiased;
     position:relative;
-    overscroll-behavior-y:none;
   }
   /* Шумова текстура тимчасово вимкнена — саме цей fixed full-screen шар
      з SVG-фільтром у поєднанні з fixed header викликав repaint-глюк
@@ -126,7 +125,8 @@
   .btn-block{width:100%;}
 
   /* ===== HEADER ===== */
-  header{position:fixed; top:0; left:0; right:0; z-index:50; padding-top:env(safe-area-inset-top, 0px); background:#fff; border-bottom:1px solid var(--line); border-radius:0 0 clamp(20px,3vw,40px) clamp(20px,3vw,40px); transform:translateZ(0); -webkit-backface-visibility:hidden; will-change:transform;}
+  header{position:fixed; top:0; left:0; right:0; z-index:50; padding-top:env(safe-area-inset-top, 0px); background:#fff; border-bottom:1px solid var(--line); border-radius:0 0 clamp(20px,3vw,40px) clamp(20px,3vw,40px); transform:translateZ(0); -webkit-backface-visibility:hidden; will-change:transform; transition:border-radius var(--dur) var(--ease);}
+  header.menu-open{border-radius:0;}
   main{padding-top:var(--header-h);}
   header::after{
     content:""; position:absolute; inset:0;
@@ -325,6 +325,7 @@
       height:auto; min-height:0;
     }
     section.card-section{margin-bottom:20px;}
+    main > section.card-section:last-of-type{margin-bottom:0;}
     .card-face{
       margin-top:0; height:auto;
       display:block;
@@ -1143,6 +1144,7 @@
     burgerBtn.querySelector('.burger-label').textContent = 'Меню';
     mobileMenu.classList.remove('open');
     mobileMenuScrim.classList.remove('open');
+    header.classList.remove('menu-open');
     document.body.style.overflow = '';
   }
   function openMobileMenu(){
@@ -1151,6 +1153,7 @@
     burgerBtn.querySelector('.burger-label').textContent = 'Закрити';
     mobileMenu.classList.add('open');
     mobileMenuScrim.classList.add('open');
+    header.classList.add('menu-open');
     document.body.style.overflow = 'hidden';
   }
   burgerBtn.addEventListener('click', function(){
