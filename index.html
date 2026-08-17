@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Self — УЗД захворювань артерій нижніх кінцівок</title>
 <meta name="description" content="Онлайн-семінар «УЗД захворювань артерій нижніх кінцівок» 3–4 вересня: практичний розбір алгоритмів дуплексного сканування, 7 балів БПР, запис на 30 днів.">
 
@@ -346,7 +346,7 @@
   }
   footer .card-face{
     background:var(--ink); color:#fff;
-    padding:72px 0 32px;
+    padding:72px 0 calc(32px + env(safe-area-inset-bottom, 0px));
     border-radius:clamp(20px,3vw,40px) clamp(20px,3vw,40px) 0 0;
     border:1px solid rgba(255,255,255,0.08);
     border-bottom:none;
@@ -550,7 +550,7 @@
     padding:40px 44px;
   }
   @media(max-width:640px){.footer-frame{padding:28px 24px; border-radius:22px;}}
-  @media(max-width:640px){footer .card-face{padding:48px 0 28px;}}
+  @media(max-width:640px){footer .card-face{padding:48px 0 calc(28px + env(safe-area-inset-bottom, 0px));}}
   .footer-top{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; padding-bottom:48px; border-bottom:1px solid rgba(255,255,255,0.12);}
   @media(max-width:700px){.footer-top{grid-template-columns:1fr; gap:32px;}}
   .footer-logo{font-family:'Sora',sans-serif; font-size:26px; font-weight:800; margin-bottom:16px;}
