@@ -53,7 +53,7 @@
     --dur-slow:.8s;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth; scroll-padding-top:var(--header-h);}
+  html{scroll-behavior:smooth; scroll-padding-top:var(--header-h); overscroll-behavior-y:none;}
   body{
     background:var(--stage);
     color:var(--ink);
@@ -62,6 +62,7 @@
     line-height:1.65;
     -webkit-font-smoothing:antialiased;
     position:relative;
+    overscroll-behavior-y:none;
   }
   /* Шумова текстура тимчасово вимкнена — саме цей fixed full-screen шар
      з SVG-фільтром у поєднанні з fixed header викликав repaint-глюк
