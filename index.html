@@ -315,6 +315,17 @@
     padding:70px 0;
   }
   @media(max-width:640px){section .card-face{padding:44px 0; border-radius:clamp(20px,5vw,32px);}}
+  /* On roomy screens, a card fills one viewport when its content is
+     short — but unlike the old pinned/sticky version, this is only a
+     floor: min-height (not height) lets a taller section simply grow,
+     no clipping, no internal scroll needed. */
+  @media(min-width:900px){
+    section .card-face{
+      display:flex; align-items:center;
+      min-height:calc(100vh - var(--header-h));
+      min-height:calc(100dvh - var(--header-h));
+    }
+  }
   footer .card-face{
     background:var(--ink); color:#fff;
     padding:72px 0 calc(32px + env(safe-area-inset-bottom, 0px));
@@ -1183,26 +1194,13 @@
     header.classList.toggle('scrolled', window.scrollY > 8);
   }, { passive: true });
 
-  // Anchor navigation — driven manually so we can glide with custom easing
-  // instead of the native instant hash-jump.
-  function docTop(target){
-    return target.getBoundingClientRect().top + window.pageYOffset;
-  }
-  function easeInOutCubic(t){ return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-  function glideTo(targetY){
-    var startY = window.pageYOffset;
-    var diff = targetY - startY;
-    if (Math.abs(diff) < 1) return;
-    var duration = Math.min(700, Math.max(260, Math.abs(diff) * 0.28));
-    var startTime = null;
-    function step(ts){
-      if (startTime === null) startTime = ts;
-      var progress = Math.min((ts - startTime) / duration, 1);
-      window.scrollTo({ top: startY + diff * easeInOutCubic(progress), left: 0, behavior: 'auto' });
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
+  // Anchor navigation — native scrollIntoView instead of a hand-rolled
+  // rAF loop. A manual per-frame window.scrollTo() runs on the main
+  // thread and was fighting the IntersectionObserver reveal callbacks
+  // firing for every full-screen section it flew past, which is what
+  // caused the stutter on longer jumps. The browser's own smooth scroll
+  // runs off-thread and already respects scroll-padding-top (header
+  // offset) and prefers-reduced-motion via html{scroll-behavior}.
   document.querySelectorAll('a[href^="#"]').forEach(function(link){
     var id = link.getAttribute('href').slice(1);
     if (!id) return;
@@ -1210,7 +1208,7 @@
     if (!target) return;
     link.addEventListener('click', function(e){
       e.preventDefault();
-      glideTo(docTop(target));
+      target.scrollIntoView({ block: 'start' });
       history.pushState(null, '', '#' + id);
     });
   });
